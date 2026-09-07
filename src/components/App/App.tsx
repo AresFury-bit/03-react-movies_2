@@ -1,43 +1,43 @@
-import css from "./App.module.css";
-import CafeInfo from "../CafeInfo/CafeInfo";
-import { useState } from "react";
-import type { Votes, VoteType } from "../../types/votes.ts";
-import VoteOptions from "../VoteOptions/VoteOptions.tsx";
-import VoteStats from "../VoteStats/VoteStats.tsx";
-import Notification from "../Notification/Notification.tsx";
+import SearchForm from "../SearchForm/SearchForm"
+import {useState} from "react";
+import type { Article } from "../../types/article"
+import ArticleList from "../ArticleList/ArticleList"
+import {FetchArticle} from "../../services/articleService"
+
+
+
+
+
+
 
 export default function App() {
-  const [votes, setVotes] = useState<Votes>({ good: 0, neutral: 0, bad: 0 });
-  const handleVote = (type: VoteType) => {
-    setVotes({ ...votes, [type]: votes[type] + 1 });
-  };
+  const [articles, setarticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  
 
-  const resetVotes = () => {
-    setVotes({ good: 0, neutral: 0, bad: 0 });
-  };
+  const handleSearch = async (topic: string) => {
+    try {
+      setIsLoading(true);
+      setIsError(false);
+      const data = await FetchArticle(topic);
+      setarticles(data);
+    setIsLoading(false);
+    } catch {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-  const totalVotes = votes.good + votes.neutral + votes.bad;
-  const positiveRate = totalVotes
-    ? Math.round((votes.good / totalVotes) * 100)
-    : 0;
 
   return (
-    <div className={css.app}>
-      <CafeInfo />
-      <VoteOptions
-        onVote={handleVote}
-        onReset={resetVotes}
-        canReset={totalVotes > 0}
-      />
-      {totalVotes > 0 ? (
-        <VoteStats
-          votes={votes}
-          totalVotes={totalVotes}
-          positiveRate={positiveRate}
-        />
-      ) : (
-        <Notification />
-      )}
-    </div>
-  );
+    <>
+      <SearchForm onSubmit={handleSearch} />
+      {isLoading && (<p>Loading data, please wait...</p>)}
+      {isError && (<p>Whoops, something went wrong! Please try again!</p>)}
+
+    {articles.length > 0 && (<ArticleList items={articles}/>)}
+    </>
+  )
 }
