@@ -1,43 +1,23 @@
-import SearchForm from "../SearchForm/SearchForm"
-import {useState} from "react";
-import type { Article } from "../../types/article"
-import ArticleList from "../ArticleList/ArticleList"
-import {FetchArticle} from "../../services/articleService"
-
-
-
-
-
-
+import { useState, useEffect } from "react";
 
 export default function App() {
-  const [articles, setarticles] = useState<Article[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
-  
+ 
+  const [count, setCount] = useState(() => {
+    const saveCount = window.localStorage.getItem("save-click");
 
-  const handleSearch = async (topic: string) => {
-    try {
-      setIsLoading(true);
-      setIsError(false);
-      const data = await FetchArticle(topic);
-      setarticles(data);
-    setIsLoading(false);
-    } catch {
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
+    if (saveCount !== null) {
+      return JSON.parse(saveCount);
     }
-  }
+    return 0;
+  })
 
-
+  useEffect(() => {
+    localStorage.setItem("save-click", JSON.stringify(count));
+  },[count])
   return (
     <>
-      <SearchForm onSubmit={handleSearch} />
-      {isLoading && (<p>Loading data, please wait...</p>)}
-      {isError && (<p>Whoops, something went wrong! Please try again!</p>)}
-
-    {articles.length > 0 && (<ArticleList items={articles}/>)}
+      <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+      <button onClick={() => setCount(0)}>Reset</button>
     </>
   )
 }
