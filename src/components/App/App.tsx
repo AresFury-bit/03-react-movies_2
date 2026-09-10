@@ -1,23 +1,19 @@
 import { useState, useEffect } from "react";
+import SearchBar from "../SearchBar/SearchBar";
+import {fetchMovies} from "../../services/movieService"
 
 export default function App() {
  
-  const [count, setCount] = useState(() => {
-    const saveCount = window.localStorage.getItem("save-click");
+  const [movies, setMovies] = useState([])
 
-    if (saveCount !== null) {
-      return JSON.parse(saveCount);
-    }
-    return 0;
-  })
-
-  useEffect(() => {
-    localStorage.setItem("save-click", JSON.stringify(count));
-  },[count])
+  const handleBubmit = (topic:string) => {
+    setMovies(fetchMovies(topic));
+  }
+ 
   return (
     <>
-      <button onClick={() => setCount(count + 1)}>Count: {count}</button>
-      <button onClick={() => setCount(0)}>Reset</button>
-    </>
+      <SearchBar onSubmit={handleBubmit} />
+      </>
+
   )
 }
