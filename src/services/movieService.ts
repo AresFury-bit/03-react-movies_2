@@ -17,7 +17,7 @@ export const fetchMovies = async(topic:string):Promise<Movie[]> => {
       query: topic,
     },
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${API_KEY}`, 
     }
   })
   return response.data.results
