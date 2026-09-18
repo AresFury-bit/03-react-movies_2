@@ -7,27 +7,30 @@ import MovieGrid from "../MovieGrid/MovieGrid";
 import MovieModal from "../MovieModal/MovieModal";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import { useQuery } from "@tanstack/react-query";
+
+
+
+
 export default function App() {
-  const [movies, setMovies] = useState<Movie[]>([]);
   const [movie, setMovie] = useState<Movie | null>(null);
-  const [loader, setLoader] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false);
+  const [topic, setTopic] = useState("")  
+  
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["movies", topic],
+    queryFn:  () => fetchMovies(topic),
+    enabled: topic !== ""
+  });
+
   const handleSubmit = async (topic: string) => {
+
     try {
-      setLoader(true);
-      setMovies([]);
-      setErrorMessage(false);
-      const data = await fetchMovies(topic);
-      setMovies(data);
-      setLoader(false);
-      if (data.length === 0) {
+      setTopic(topic);
+      if (data && data.length === 0) {
         toast.error("No movies found for your request.");
       }
     } catch {
       toast.error("This didn't work.");
-      setErrorMessage(true);
-    } finally {
-      setLoader(false);
     }
   };
   const handleSelect = (movie: Movie) => {
@@ -40,12 +43,12 @@ export default function App() {
   return (
     <>
       <SearchBar onSubmit={handleSubmit} />
-      {movies.length > 0 && (
-        <MovieGrid onSelect={handleSelect} movies={movies} />
+      {data && data.length > 0 && (
+        <MovieGrid onSelect={handleSelect} movies={data} />
       )}
       {movie && <MovieModal movie={movie} onClose={closeModal} />}
-      {loader && <Loader />}
-      {errorMessage && <ErrorMessage />}
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
       <Toaster />
     </>
   );
